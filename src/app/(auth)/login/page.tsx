@@ -17,6 +17,17 @@ import {
 } from "@/components/ui";
 import { Mail, ArrowRight } from "lucide-react";
 
+async function getPostLoginRedirect(): Promise<string> {
+  try {
+    const res = await fetch("/api/profile/aptitude");
+    if (!res.ok) return "/onboarding";
+    const data = await res.json();
+    return data?.data?.aptitudeCompleted ? "/dashboard" : "/onboarding";
+  } catch {
+    return "/onboarding";
+  }
+}
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -65,7 +76,12 @@ function LoginForm() {
             return;
           }
         }
-        router.push(callbackUrl);
+        // If default redirect is onboarding, check if user has completed aptitude
+        const targetUrl =
+          callbackUrl === "/onboarding" || !callbackUrl
+            ? await getPostLoginRedirect()
+            : callbackUrl;
+        router.push(targetUrl);
         router.refresh();
       }
     } catch {

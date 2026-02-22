@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, Button, Mascot, StepProgress } from "@/components/ui";
+import { Card, CardContent, Button, Mascot, StepProgress, Spinner } from "@/components/ui";
 import {
   ArrowRight,
   ArrowLeft,
@@ -61,6 +61,21 @@ export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = React.useState(0);
   const [answers, setAnswers] = React.useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isCheckingAptitude, setIsCheckingAptitude] = React.useState(true);
+
+  // Redirect to dashboard if user has already completed aptitude (e.g. after Google OAuth)
+  React.useEffect(() => {
+    fetch("/api/profile/aptitude")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.data?.aptitudeCompleted) {
+          router.replace("/dashboard");
+          return;
+        }
+        setIsCheckingAptitude(false);
+      })
+      .catch(() => setIsCheckingAptitude(false));
+  }, [router]);
 
   const currentQuestion = aptitudeQuestions[currentStep];
   const totalSteps = aptitudeQuestions.length;
@@ -120,6 +135,14 @@ export default function OnboardingPage() {
   };
 
   const Icon = currentQuestion.icon;
+
+  if (isCheckingAptitude) {
+    return (
+      <div className="bg-background flex min-h-screen items-center justify-center p-4">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-background flex min-h-screen items-center justify-center p-4">
