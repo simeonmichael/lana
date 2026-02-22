@@ -13,128 +13,69 @@ import {
   GraduationCap,
 } from "lucide-react";
 
-// Placeholder questions for the aptitude test (Phase 2 will have full implementation with AI)
 const aptitudeQuestions = [
   {
     id: "interests",
     category: "interests",
     question: "What activities do you enjoy most?",
-    description: "Select all that apply to you",
+    description: "Share what you like to do in your free time or at work",
     icon: Heart,
-    options: [
-      { id: "tech", label: "Working with technology and computers", value: "technology" },
-      { id: "creative", label: "Creative work (art, design, writing)", value: "creative" },
-      { id: "people", label: "Helping and working with people", value: "social" },
-      { id: "numbers", label: "Working with numbers and data", value: "analytical" },
-      { id: "hands", label: "Building and fixing things", value: "practical" },
-      { id: "nature", label: "Working outdoors or with nature", value: "nature" },
-    ],
-    type: "multiple" as const,
+    placeholder: "e.g. Working with technology, creative writing, helping people...",
   },
   {
     id: "learning_style",
     category: "learning",
     question: "How do you learn best?",
-    description: "Choose your preferred learning method",
+    description: "Describe the methods that help you absorb new information",
     icon: Brain,
-    options: [
-      { id: "visual", label: "Watching videos, diagrams, and images", value: "VISUAL" },
-      { id: "auditory", label: "Listening to explanations and discussions", value: "AUDITORY" },
-      { id: "reading", label: "Reading books, articles, and notes", value: "READING_WRITING" },
-      { id: "kinesthetic", label: "Hands-on practice and experiments", value: "KINESTHETIC" },
-    ],
-    type: "single" as const,
+    placeholder: "e.g. Watching videos, hands-on practice, reading...",
   },
   {
     id: "strengths",
     category: "strengths",
     question: "What are your strongest skills?",
-    description: "Select your top strengths",
+    description: "Tell us what you're good at",
     icon: Target,
-    options: [
-      { id: "problem", label: "Problem-solving and critical thinking", value: "problem_solving" },
-      { id: "comm", label: "Communication and presentation", value: "communication" },
-      { id: "leader", label: "Leadership and teamwork", value: "leadership" },
-      { id: "detail", label: "Attention to detail and organization", value: "organization" },
-      { id: "creative_thinking", label: "Creative and innovative thinking", value: "creativity" },
-      { id: "technical", label: "Technical and analytical skills", value: "technical" },
-    ],
-    type: "multiple" as const,
+    placeholder: "e.g. Problem-solving, communication, attention to detail...",
   },
   {
     id: "goals",
     category: "goals",
     question: "What's most important to you in a career?",
-    description: "Choose what matters most",
+    description: "Share what matters most to you professionally",
     icon: Lightbulb,
-    options: [
-      { id: "money", label: "High salary and financial security", value: "financial" },
-      { id: "impact", label: "Making a positive impact on society", value: "impact" },
-      { id: "growth", label: "Continuous learning and growth", value: "growth" },
-      { id: "balance", label: "Work-life balance and flexibility", value: "balance" },
-      { id: "prestige", label: "Recognition and prestige", value: "prestige" },
-      { id: "stability", label: "Job security and stability", value: "stability" },
-    ],
-    type: "multiple" as const,
+    placeholder: "e.g. Growth, work-life balance, making an impact...",
   },
   {
     id: "education",
     category: "education",
     question: "What's your current education level?",
-    description: "Select your education status",
+    description: "Describe your educational background",
     icon: GraduationCap,
-    options: [
-      { id: "secondary", label: "Secondary school (JSS/SSS)", value: "secondary" },
-      { id: "completed", label: "Completed secondary school", value: "secondary_completed" },
-      { id: "vocational", label: "Vocational/Technical training", value: "vocational" },
-      { id: "university", label: "Currently in university", value: "university" },
-      { id: "graduate", label: "University graduate", value: "graduate" },
-    ],
-    type: "single" as const,
+    placeholder: "e.g. Secondary school, university student, graduate...",
   },
 ];
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = React.useState(0);
-  const [answers, setAnswers] = React.useState<Record<string, string | string[]>>({});
+  const [answers, setAnswers] = React.useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const currentQuestion = aptitudeQuestions[currentStep];
   const totalSteps = aptitudeQuestions.length;
   const isLastStep = currentStep === totalSteps - 1;
 
-  const handleSelect = (value: string) => {
-    if (currentQuestion.type === "single") {
-      setAnswers((prev) => ({
-        ...prev,
-        [currentQuestion.id]: value,
-      }));
-    } else {
-      const currentAnswers = (answers[currentQuestion.id] as string[]) || [];
-      const newAnswers = currentAnswers.includes(value)
-        ? currentAnswers.filter((v) => v !== value)
-        : [...currentAnswers, value];
-      setAnswers((prev) => ({
-        ...prev,
-        [currentQuestion.id]: newAnswers,
-      }));
-    }
-  };
-
-  const isSelected = (value: string) => {
-    const answer = answers[currentQuestion.id];
-    if (Array.isArray(answer)) {
-      return answer.includes(value);
-    }
-    return answer === value;
+  const handleChange = (value: string) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [currentQuestion.id]: value,
+    }));
   };
 
   const canProceed = () => {
     const answer = answers[currentQuestion.id];
-    if (!answer) return false;
-    if (Array.isArray(answer)) return answer.length > 0;
-    return true;
+    return typeof answer === "string" && answer.trim().length > 0;
   };
 
   const handleNext = async () => {
@@ -215,46 +156,15 @@ export default function OnboardingPage() {
               </div>
             </div>
 
-            {/* Options */}
-            <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {currentQuestion.options.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => handleSelect(option.value)}
-                  className={`rounded-xl border-2 p-4 text-left transition-all duration-200 ${
-                    isSelected(option.value)
-                      ? "border-primary bg-primary/5 text-foreground"
-                      : "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${
-                        isSelected(option.value)
-                          ? "border-primary bg-primary"
-                          : "border-muted-foreground"
-                      }`}
-                    >
-                      {isSelected(option.value) && (
-                        <svg
-                          className="h-3 w-3 text-white"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={3}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      )}
-                    </div>
-                    <span className="font-medium">{option.label}</span>
-                  </div>
-                </button>
-              ))}
+            {/* Open-ended answer */}
+            <div className="mt-8">
+              <textarea
+                value={answers[currentQuestion.id] ?? ""}
+                onChange={(e) => handleChange(e.target.value)}
+                placeholder={currentQuestion.placeholder}
+                rows={4}
+                className="bg-input border-border placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20 w-full resize-none rounded-xl border px-4 py-3 text-base transition-all duration-200 focus:ring-2 focus:outline-none"
+              />
             </div>
 
             {/* Navigation */}

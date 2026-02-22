@@ -20,6 +20,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
+    console.log(JSON.stringify(body));
+
     // Validate input
     const validationResult = registerSchema.safeParse(body);
 
@@ -89,7 +91,13 @@ export async function POST(request: NextRequest) {
           message: errorObj.message,
         });
       }
-      // Don't fail registration if email fails - user can request new verification
+      return NextResponse.json(
+        {
+          success: false,
+          error: "An error occurred during registration. Please try again.",
+        },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json(
