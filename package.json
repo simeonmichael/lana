@@ -11,7 +11,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "next build",
     "build:production": "prisma generate && next build",
     "build:analyze": "ANALYZE=true next build",
     "start": "next start",
