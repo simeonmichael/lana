@@ -34,7 +34,7 @@ An AI-powered career guidance platform designed to help Sierra Leonean youth dis
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-org/lana.git
+git clone https://github.com/simeonmichael/lana.git
 cd lana
 ```
 
