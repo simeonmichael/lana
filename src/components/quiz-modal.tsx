@@ -201,13 +201,9 @@ export function QuizModal({
   }
 
   const handleSelectAnswer = (answerIndex: number) => {
-    if (showExplanation || isSubmitting) return; // Don't allow changing after showing explanation or during submission
+    if (isSubmitting) return;
 
     setSelectedAnswer(answerIndex);
-    const correct = answerIndex === question.correctAnswer;
-    setIsCorrect(correct);
-    setShowExplanation(true);
-
     setAnswers((prev) => ({
       ...prev,
       [question.id]: answerIndex,
@@ -215,12 +211,11 @@ export function QuizModal({
   };
 
   const handleNext = () => {
-    setShowExplanation(false);
-    setSelectedAnswer(null);
-    setIsCorrect(null);
+    if (selectedAnswer === null) return;
 
     if (currentQuestion < totalQuestions - 1) {
       setCurrentQuestion((prev) => prev + 1);
+      setSelectedAnswer(null);
     } else {
       // Submit quiz
       handleSubmit();
@@ -420,19 +415,8 @@ export function QuizModal({
                 <div className="space-y-3">
                   {options.map((option, index) => {
                     const isSelected = selectedAnswer === index;
-                    const isCorrectAnswer = index === question.correctAnswer;
-
                     let buttonClass = "w-full p-4 rounded-xl border-2 text-left transition-all ";
-
-                    if (showExplanation) {
-                      if (isCorrectAnswer) {
-                        buttonClass += "border-success bg-success/10 ";
-                      } else if (isSelected && !isCorrectAnswer) {
-                        buttonClass += "border-destructive bg-destructive/10 ";
-                      } else {
-                        buttonClass += "border-border opacity-50 ";
-                      }
-                    } else if (isSelected) {
+                    if (isSelected) {
                       buttonClass += "border-primary bg-primary/5 ";
                     } else {
                       buttonClass += "border-border hover:border-primary/50 hover:bg-muted/30 ";
@@ -448,24 +432,14 @@ export function QuizModal({
                         <div className="flex items-center gap-3">
                           <div
                             className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 ${
-                              showExplanation && isCorrectAnswer
-                                ? "border-success bg-success text-white"
-                                : showExplanation && isSelected && !isCorrectAnswer
-                                  ? "border-destructive bg-destructive text-white"
-                                  : isSelected
-                                    ? "border-primary bg-primary text-white"
-                                    : "border-muted-foreground"
+                              isSelected
+                                ? "border-primary bg-primary text-white"
+                                : "border-muted-foreground"
                             }`}
                           >
-                            {showExplanation && isCorrectAnswer ? (
-                              <CheckCircle2 className="h-5 w-5" />
-                            ) : showExplanation && isSelected && !isCorrectAnswer ? (
-                              <XCircle className="h-5 w-5" />
-                            ) : (
-                              <span className="text-sm font-medium">
-                                {String.fromCharCode(65 + index)}
-                              </span>
-                            )}
+                            <span className="text-sm font-medium">
+                              {String.fromCharCode(65 + index)}
+                            </span>
                           </div>
                           <span className={showExplanation && isCorrectAnswer ? "font-medium" : ""}>
                             {option}
@@ -476,28 +450,12 @@ export function QuizModal({
                   })}
                 </div>
               </div>
-
-              {/* Explanation */}
-              {showExplanation && question.explanation && (
-                <div
-                  className={`rounded-xl p-4 ${
-                    isCorrect
-                      ? "bg-success/10 border-success/20 border"
-                      : "border border-amber-200 bg-amber-50"
-                  }`}
-                >
-                  <p className="mb-1 text-sm font-medium">
-                    {isCorrect ? "✓ Correct!" : "✗ Incorrect"}
-                  </p>
-                  <p className="text-muted-foreground text-sm">{question.explanation}</p>
-                </div>
-              )}
             </div>
           )}
         </div>
 
         {/* Footer */}
-        {!result && showExplanation && !isTopicCompleted && (
+        {!result && !isTopicCompleted && (
           <div className="border-border bg-muted/30 relative border-t p-6">
             {isSubmitting && (
               <div className="bg-muted/30 absolute inset-0 z-10 rounded-b-2xl backdrop-blur-sm" />
@@ -505,11 +463,11 @@ export function QuizModal({
             <Button
               onClick={handleNext}
               isLoading={isSubmitting}
-              disabled={isSubmitting}
+              disabled={isSubmitting || selectedAnswer === null}
               fullWidth
               rightIcon={<ChevronRight className="h-4 w-4" />}
             >
-              {currentQuestion === totalQuestions - 1 ? "See Results" : "Next Question"}
+              {currentQuestion === totalQuestions - 1 ? "Submit Quiz" : "Next Question"}
             </Button>
           </div>
         )}
