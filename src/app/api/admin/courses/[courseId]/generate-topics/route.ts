@@ -118,7 +118,7 @@ IMPORTANT:
     ];
 
     const response = await chatCompletion(messages, {
-      model: "google/gemini-2.0-flash-exp:free", // Use Google Gemini
+      model: "google/gemini-2.5-flash", // Use Google Gemini
       temperature: 0.3,
       maxTokens: 6000, // Increased for comprehensive topic generation
     });
