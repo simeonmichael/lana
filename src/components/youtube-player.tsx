@@ -17,6 +17,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui";
 
+// --- Constants ---
+
+// Percentage of video that must be watched to count as "completed"
+const COMPLETION_THRESHOLD = 95;
+
 // --- Types ---
 
 interface YouTubePlayerProps {
@@ -138,10 +143,12 @@ export function YouTubePlayer({
   const [isMuted, setIsMuted] = React.useState(false);
   const [showControls, setShowControls] = React.useState(true);
   const [progress, setProgress] = React.useState(initialProgress);
-  const [hasCompleted, setHasCompleted] = React.useState(initialProgress >= 100);
+  const [hasCompleted, setHasCompleted] = React.useState(initialProgress >= COMPLETION_THRESHOLD);
   // Track if video was already completed when loaded (to prevent progress updates on rewatch)
-  const wasCompletedInitially = React.useRef(initialProgress >= 100);
-  const savedCompletedProgress = React.useRef(initialProgress >= 100 ? initialProgress : 0);
+  const wasCompletedInitially = React.useRef(initialProgress >= COMPLETION_THRESHOLD);
+  const savedCompletedProgress = React.useRef(
+    initialProgress >= COMPLETION_THRESHOLD ? initialProgress : 0
+  );
 
   // Transcript state
   const [transcript, setTranscript] = React.useState<TranscriptData | null>(null);
@@ -164,7 +171,7 @@ export function YouTubePlayer({
 
     // Reset progress/completion flags based on the new initialProgress
     setProgress(initialProgress);
-    const completed = initialProgress >= 100;
+    const completed = initialProgress >= COMPLETION_THRESHOLD;
     setHasCompleted(completed);
     wasCompletedInitially.current = completed;
     savedCompletedProgress.current = completed ? initialProgress : 0;
@@ -348,11 +355,15 @@ export function YouTubePlayer({
               onProgressUpdate?.(pct);
             }
 
-            // Check for completion at 99.5% or higher (accounts for YouTube rounding)
+            // Check for completion at threshold or higher
             // Also check if video has ended (currentTime very close to duration)
             const isNearEnd = dur > 0 && curr >= dur - 0.5; // Within 0.5 seconds of end
-            if ((pct >= 99.5 || isNearEnd) && !hasCompleted && !disableProgressUpdate) {
-              handleVideoComplete(100); // Always mark as 100% when near completion
+            if (
+              (pct >= COMPLETION_THRESHOLD || isNearEnd) &&
+              !hasCompleted &&
+              !disableProgressUpdate
+            ) {
+              handleVideoComplete(100); // Mark as fully complete once threshold is reached
             }
 
             // Save progress every 5% change (only if not already completed and updates enabled)
@@ -457,7 +468,7 @@ export function YouTubePlayer({
 
     try {
       const roundedPct = Math.round(pct);
-      const isComplete = forceComplete || roundedPct >= 100;
+      const isComplete = forceComplete || roundedPct >= COMPLETION_THRESHOLD;
 
       await fetch(`/api/courses/${courseSlug}/progress`, {
         method: "POST",
@@ -477,7 +488,7 @@ export function YouTubePlayer({
   const handleVideoComplete = (currentPct?: number) => {
     if (!hasCompleted) {
       setHasCompleted(true);
-      // Always mark as 100% when video is complete
+      // Always mark as 100% when video is considered complete
       const completionPct = 100;
       setProgress(completionPct);
       savedCompletedProgress.current = completionPct;
@@ -748,11 +759,12 @@ export function YouTubePlayer({
           </div>
         ) : progress > 0 ? (
           <p className="text-muted-foreground text-xs">
-            Watch {Math.max(0, Math.round(100 - progress))}% more to unlock the quiz
+            Watch {Math.max(0, Math.round(COMPLETION_THRESHOLD - progress))}% more to unlock the
+            quiz
           </p>
         ) : (
           <p className="text-muted-foreground text-xs">
-            Watch 100% of the video to mark it as complete
+            Watch at least {COMPLETION_THRESHOLD}% of the video to mark it as complete
           </p>
         )}
       </div>

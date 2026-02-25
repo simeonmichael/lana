@@ -441,7 +441,7 @@ export function QuizModal({
                               {String.fromCharCode(65 + index)}
                             </span>
                           </div>
-                          <span className={showExplanation && isCorrectAnswer ? "font-medium" : ""}>
+                          <span className={showExplanation && isCorrect ? "font-medium" : ""}>
                             {option}
                           </span>
                         </div>
