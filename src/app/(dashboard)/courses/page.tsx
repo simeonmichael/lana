@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import Link from "next/link";
+import { Suspense } from "react";
 import {
   Card,
   CardHeader,
@@ -11,9 +12,15 @@ import {
   Button,
   Mascot,
 } from "@/components/ui";
-import { BookOpen, Clock, BarChart3, ArrowRight, Search, Filter } from "lucide-react";
+import { BookOpen, Clock, BarChart3, ArrowRight, Filter } from "lucide-react";
+import { CourseSearch } from "@/components/courses/course-search";
 
-export default async function CoursesPage() {
+interface CoursesPageProps {
+  searchParams: Promise<{ q?: string }>;
+}
+
+export default async function CoursesPage({ searchParams }: CoursesPageProps) {
+  const { q: searchQuery } = await searchParams;
   const session = await auth();
 
   if (!session?.user) {
@@ -43,6 +50,23 @@ export default async function CoursesPage() {
   const enrolledCourseIds = new Set(enrollments.map((e) => e.courseId));
   const hasCompletedAptitude = profile?.aptitudeCompleted ?? false;
 
+  // Filter courses by search query
+  const searchLower = searchQuery?.toLowerCase().trim() || "";
+  const filteredCourses =
+    searchLower.length < 2
+      ? courses
+      : courses.filter((course) => {
+          const matchesText = (text: string) => text.toLowerCase().includes(searchLower);
+          const matchesAny = (items: string[]) =>
+            items.some((item) => item.toLowerCase().includes(searchLower));
+          return (
+            matchesText(course.title) ||
+            matchesText(course.description) ||
+            matchesAny(course.skills) ||
+            matchesAny(course.careerPaths)
+          );
+        });
+
   return (
     <div className="animate-fade-in space-y-8">
       {/* Header */}
@@ -56,14 +80,9 @@ export default async function CoursesPage() {
 
         {/* Search and Filter */}
         <div className="flex w-full items-center gap-3 lg:w-auto">
-          <div className="relative flex-1 lg:w-64">
-            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search courses..."
-              className="border-border bg-card focus:ring-primary h-10 w-full rounded-xl border pr-4 pl-10 text-sm focus:ring-2 focus:outline-none"
-            />
-          </div>
+          <Suspense fallback={<div className="bg-muted h-10 w-64 animate-pulse rounded-xl" />}>
+            <CourseSearch />
+          </Suspense>
           <Button variant="outline" size="icon" className="h-10 w-10">
             <Filter className="h-4 w-4" />
           </Button>
@@ -137,17 +156,21 @@ export default async function CoursesPage() {
           {hasCompletedAptitude ? "Recommended For You" : "All Courses"}
         </h2>
 
-        {courses.length === 0 ? (
+        {filteredCourses.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
               <Mascot size="lg" mood="thinking" animate={false} />
-              <h3 className="text-foreground mt-4 font-semibold">No courses available yet</h3>
-              <p className="text-muted-foreground mt-2">Check back soon for new courses!</p>
+              <h3 className="text-foreground mt-4 font-semibold">
+                {searchLower ? "No courses match your search" : "No courses available yet"}
+              </h3>
+              <p className="text-muted-foreground mt-2">
+                {searchLower ? "Try a different search term" : "Check back soon for new courses!"}
+              </p>
             </CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {courses.map((course) => {
+            {filteredCourses.map((course) => {
               const isEnrolled = enrolledCourseIds.has(course.id);
 
               return (

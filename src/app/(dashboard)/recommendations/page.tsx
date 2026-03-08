@@ -123,7 +123,7 @@ export default async function RecommendationsPage() {
       </div>
 
       {/* Profile Summary Card */}
-      <Card className="from-primary to-primary/80 border-0 bg-gradient-to-r text-white">
+      <Card className="from-primary to-primary/80 border-0 bg-gradient-to-r p-4 text-white">
         <CardContent className="py-8">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {/* Learning Style */}

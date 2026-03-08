@@ -183,7 +183,7 @@ export default async function JobsPage() {
               const hasApplied = appliedJobIds.has(job.id);
 
               return (
-                <Card key={job.id} variant="interactive">
+                <Card key={job.id} variant="interactive" className="p-4">
                   <CardContent className="py-6">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
                       {/* Company logo */}
@@ -245,8 +245,10 @@ export default async function JobsPage() {
                             </span>
                           )}
                           {job.salaryRange && (
-                            <span className="flex items-center gap-1">
-                              <DollarSign className="h-4 w-4" />
+                            <span className="flex items-center gap-3">
+                              {/* <span className="h-4 w-4" >
+                                NLe
+                              </span> */}
                               {job.salaryRange}
                             </span>
                           )}

@@ -5,7 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
-import { Bell, Search, Menu, X, LogOut, User, Settings, ChevronDown } from "lucide-react";
+import { Bell, Menu, X, LogOut, User, Settings, ChevronDown } from "lucide-react";
+import { GlobalSearch } from "./global-search";
 
 interface DashboardHeaderProps {
   user: {
@@ -69,14 +70,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
 
         {/* Search Bar */}
         <div className="mx-8 hidden max-w-md flex-1 md:flex">
-          <div className="relative w-full">
-            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search courses, careers..."
-              className="border-border bg-background focus:ring-primary h-10 w-full rounded-xl border pr-4 pl-10 text-sm focus:ring-2 focus:outline-none"
-            />
-          </div>
+          <GlobalSearch />
         </div>
 
         {/* Right side */}
@@ -159,13 +153,8 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         <div className="border-border bg-card animate-slide-up border-t lg:hidden">
           <div className="space-y-4 p-4">
             {/* Mobile search */}
-            <div className="relative">
-              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search courses, careers..."
-                className="border-border bg-background focus:ring-primary h-10 w-full rounded-xl border pr-4 pl-10 text-sm focus:ring-2 focus:outline-none"
-              />
+            <div className="w-full">
+              <GlobalSearch />
             </div>
 
             {/* Mobile nav links */}

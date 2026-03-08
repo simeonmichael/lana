@@ -22,7 +22,7 @@ export default async function CertificatesPage() {
   });
 
   // Filter out certificates with null courses (in case course was deleted)
-  const validCertificates = certificates.filter((cert) => cert.course !== null);
+  const validCertificates = certificates && certificates.filter((cert) => cert.course !== null);
 
   // Get all completed and passed exams without certificates
   const examSchedules = await db.examSchedule.findMany({
@@ -192,10 +192,10 @@ export default async function CertificatesPage() {
 
       {/* Info about certificates */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Card className="bg-tertiary/30">
-          <CardContent className="py-6">
+        <Card className="bg-tertiary/30 p-4">
+          <CardContent>
             <div className="flex items-start gap-4">
-              <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-full">
+              <div className="bg-primary/10 flex items-center justify-center rounded-full p-1">
                 <Shield className="text-primary h-6 w-6" />
               </div>
               <div>
@@ -210,10 +210,10 @@ export default async function CertificatesPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-secondary/30">
-          <CardContent className="py-6">
+        <Card className="bg-secondary/30 p-4">
+          <CardContent>
             <div className="flex items-start gap-4">
-              <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-full">
+              <div className="bg-primary/10 flex items-center justify-center rounded-full p-1">
                 <Shield className="text-primary h-6 w-6" />
               </div>
               <div>

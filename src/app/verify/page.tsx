@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, Button, Input } from "@/components/ui";
 import { QrCode, Search, Shield } from "lucide-react";
+import { useErrorToast } from "@/components/ui/toast";
 
 export default function VerifyPage() {
   const router = useRouter();
@@ -11,6 +12,7 @@ export default function VerifyPage() {
   const [isScanning, setIsScanning] = React.useState(false);
   const scannerRef = React.useRef<{ stop: () => Promise<void> } | null>(null);
   const [scanError, setScanError] = React.useState<string | null>(null);
+  const showErrorToast = useErrorToast();
 
   const handleManualVerify = () => {
     if (certificateNumber.trim()) {
@@ -48,7 +50,16 @@ export default function VerifyPage() {
       );
     } catch (err) {
       console.error("QR scanning error:", err);
-      setScanError("Failed to start camera. Please check permissions.");
+
+      const errorName = (err as { name?: string })?.name;
+      const isNotFoundError = errorName === "NotFoundError";
+
+      const friendlyMessage = isNotFoundError
+        ? "No camera was found on this device. Try connecting a camera or switching to a different device."
+        : "We couldn't access your camera. Please check your browser permissions and try again.";
+
+      setScanError(friendlyMessage);
+      showErrorToast("Unable to start camera", friendlyMessage);
       setIsScanning(false);
     }
   };
@@ -153,10 +164,10 @@ export default function VerifyPage() {
         </Card>
 
         {/* Info */}
-        <Card className="bg-tertiary/30">
-          <CardContent className="py-6">
+        <Card className="bg-tertiary/30 p-4">
+          <CardContent>
             <div className="flex items-start gap-4">
-              <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-full">
+              <div className="bg-primary/10 flex items-center justify-center rounded-full p-1">
                 <Shield className="text-primary h-6 w-6" />
               </div>
               <div>
