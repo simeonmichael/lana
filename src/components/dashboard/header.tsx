@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Bell, Menu, X, LogOut, User, Settings, ChevronDown } from "lucide-react";
 import { GlobalSearch } from "./global-search";
@@ -18,21 +19,94 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isProfileOpen, setIsProfileOpen] = React.useState(false);
   const profileRef = React.useRef<HTMLDivElement>(null);
+  const notificationsRef = React.useRef<HTMLDivElement>(null);
+  const [isNotificationsOpen, setIsNotificationsOpen] = React.useState(false);
+  const [isLoadingNotifications, setIsLoadingNotifications] = React.useState(false);
+  const [notifications, setNotifications] = React.useState<
+    {
+      id: string;
+      type: string;
+      title: string;
+      message: string;
+      link?: string | null;
+      read: boolean;
+      readAt: string | null;
+      createdAt: string;
+    }[]
+  >([]);
+  const [unreadCount, setUnreadCount] = React.useState(0);
 
   // Close profile dropdown when clicking outside
   React.useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+
+      if (profileRef.current && !profileRef.current.contains(target)) {
         setIsProfileOpen(false);
+      }
+
+      if (notificationsRef.current && !notificationsRef.current.contains(target)) {
+        setIsNotificationsOpen(false);
       }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const loadNotifications = React.useCallback(async () => {
+    try {
+      setIsLoadingNotifications(true);
+      const response = await fetch("/api/notifications");
+      if (!response.ok) {
+        return;
+      }
+      const data = await response.json();
+      setNotifications(data.notifications || []);
+      setUnreadCount(data.unreadCount || 0);
+    } catch (error) {
+      console.error("Error loading notifications:", error);
+    } finally {
+      setIsLoadingNotifications(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    // Load notifications when the dashboard header mounts
+    loadNotifications();
+  }, [loadNotifications]);
+
+  const handleNotificationClick = async (notification: {
+    id: string;
+    link?: string | null;
+    read: boolean;
+  }) => {
+    if (!notification.read) {
+      try {
+        await fetch(`/api/notifications/${notification.id}/read`, {
+          method: "POST",
+        });
+
+        setNotifications((prev) =>
+          prev.map((n) =>
+            n.id === notification.id ? { ...n, read: true, readAt: new Date().toISOString() } : n
+          )
+        );
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      } catch (error) {
+        console.error("Error marking notification as read:", error);
+      }
+    }
+
+    if (notification.link) {
+      setIsNotificationsOpen(false);
+      router.push(notification.link);
+    }
+  };
 
   const getInitials = (name: string | null) => {
     if (!name) return "U";
@@ -76,10 +150,65 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         {/* Right side */}
         <div className="flex items-center gap-2">
           {/* Notifications */}
-          <button className="hover:bg-muted relative rounded-lg p-2">
-            <Bell className="text-muted-foreground h-5 w-5" />
-            <span className="bg-destructive absolute top-1 right-1 h-2 w-2 rounded-full" />
-          </button>
+          <div className="relative" ref={notificationsRef}>
+            <button
+              className="hover:bg-muted relative rounded-lg p-2"
+              onClick={() => {
+                setIsNotificationsOpen((prev) => !prev);
+                if (!isNotificationsOpen && notifications.length === 0) {
+                  // Lazy-load notifications if we don't have any yet
+                  loadNotifications();
+                }
+              }}
+              aria-label="Notifications"
+            >
+              <Bell className="text-muted-foreground h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="bg-destructive absolute top-1 right-1 h-2 w-2 rounded-full" />
+              )}
+            </button>
+            {isNotificationsOpen && (
+              <div className="border-border bg-card animate-fade-in absolute right-0 mt-2 w-80 rounded-xl border shadow-lg">
+                <div className="border-border border-b px-4 py-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-foreground text-sm font-medium">Notifications</p>
+                    {unreadCount > 0 && (
+                      <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
+                        {unreadCount} new
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="max-h-80 overflow-y-auto px-1 py-2">
+                  {isLoadingNotifications ? (
+                    <p className="text-muted-foreground px-3 py-2 text-sm">Loading...</p>
+                  ) : notifications.length === 0 ? (
+                    <p className="text-muted-foreground px-3 py-2 text-sm">
+                      You have no notifications yet.
+                    </p>
+                  ) : (
+                    notifications.slice(0, 10).map((notification) => (
+                      <button
+                        key={notification.id}
+                        className={cn(
+                          "hover:bg-muted/70 flex w-full flex-col items-start gap-1 rounded-lg px-3 py-2 text-left text-sm",
+                          !notification.read ? "bg-primary/5" : ""
+                        )}
+                        onClick={() => handleNotificationClick(notification)}
+                      >
+                        <span className="text-foreground font-medium">
+                          {notification.title || "Notification"}
+                        </span>
+                        <span className="text-muted-foreground line-clamp-2 text-xs">
+                          {notification.message}
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Profile dropdown */}
           <div className="relative" ref={profileRef}>
