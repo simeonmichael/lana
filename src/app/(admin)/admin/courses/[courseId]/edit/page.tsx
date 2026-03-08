@@ -578,10 +578,9 @@ export default function EditCoursePage() {
 
     setIsSaving(true);
     try {
-      const endpoint = course.isPublished ? "unpublish" : "publish";
       const method = course.isPublished ? "DELETE" : "POST";
 
-      const response = await fetch(`/api/admin/courses/${courseId}/${endpoint}`, {
+      const response = await fetch(`/api/admin/courses/${courseId}/publish`, {
         method,
       });
 
