@@ -91,15 +91,12 @@ export async function getCareerRecommendations(
 ): Promise<CareerRecommendation[]> {
   // Build query from profile
   const queryText = buildProfileQuery(profile);
-  console.log("Profile query:", queryText);
 
   // Generate embedding for semantic search
   const queryEmbedding = await generateEmbedding(queryText);
 
   // Query Pinecone with userType: "Employed" filter
   const results = await querySimilar(queryEmbedding, topK, undefined, { userType: "Employed" });
-
-  console.log(`Found ${results.length} matching careers from Pinecone`);
 
   if (results.length === 0) {
     throw new Error("No career matches found in database");
@@ -164,7 +161,7 @@ For each career, provide a JSON response with this structure:
       "demandScore": 80,
       "skills": ["skill1", "skill2", "skill3"],
       "educationPath": ["Step 1", "Step 2", "Step 3"],
-      "averageSalary": "$XX,000 - $XX,000",
+      "averageSalary": "NLeXX,000 - NLeXX,000",
       "growthOutlook": "Very High/High/Moderate/Low",
       "category": "Technology/Creative/Business/Healthcare/etc",
       "reasoning": "Why this career matches the student's profile"
@@ -228,7 +225,7 @@ Return ONLY valid JSON.`;
       demandScore: 75,
       skills: c.skills,
       educationPath: [`Study ${c.field}`, "Gain practical experience", "Build portfolio"],
-      averageSalary: "$40,000 - $80,000",
+      averageSalary: "-",
       growthOutlook: c.score > 0.7 ? "High" : "Moderate",
       category: "General",
       reasoning: `Matched based on your profile with ${Math.round(c.score * 100)}% similarity.`,

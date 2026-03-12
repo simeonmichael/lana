@@ -356,7 +356,7 @@ export default async function DashboardPage() {
             </p>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:gap-6">
-            <Card className="relative overflow-hidden">
+            <Card className="relative overflow-hidden p-2">
               <div className="bg-primary absolute top-0 left-0 h-full w-1" />
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
@@ -374,7 +374,7 @@ export default async function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="relative overflow-hidden opacity-60">
+            <Card className="relative overflow-hidden p-2 opacity-60">
               <div className="bg-muted absolute top-0 left-0 h-full w-1" />
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
@@ -391,7 +391,7 @@ export default async function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="relative overflow-hidden opacity-60">
+            <Card className="relative overflow-hidden p-2 opacity-60">
               <div className="bg-muted absolute top-0 left-0 h-full w-1" />
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">

@@ -177,7 +177,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Profile Overview */}
-      <Card>
+      <Card className="p-4">
         <CardContent className="py-6">
           <div className="flex flex-col items-center gap-6 md:flex-row">
             {/* Avatar */}
