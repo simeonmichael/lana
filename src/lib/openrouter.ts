@@ -92,7 +92,7 @@ export async function chatCompletion(
   } = {}
 ): Promise<string> {
   const {
-    // Using a reliable model - fallback chain: gemini flash -> llama -> mistral
+    // fallback model
     model = "x-ai/grok-4.1-fast:free",
     temperature = 0.7,
     maxTokens = 4000,

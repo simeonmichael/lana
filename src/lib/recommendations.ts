@@ -89,10 +89,9 @@ export async function getCareerRecommendations(
   profile: AptitudeProfile,
   topK: number = 10
 ): Promise<CareerRecommendation[]> {
-  // Build query from profile
+  
   const queryText = buildProfileQuery(profile);
 
-  // Generate embedding for semantic search
   const queryEmbedding = await generateEmbedding(queryText);
 
   // Query Pinecone with userType: "Employed" filter
@@ -311,13 +310,13 @@ export async function getCourseRecommendations(
 
   return results.map((result) => ({
     id: result.id,
-    title: (result.metadata?.title as string) || "Course",
-    description: (result.metadata?.description as string) || "",
+    title: (result.metadata?.title as string),
+    description: (result.metadata?.description as string),
     matchScore: Math.round(result.score * 100),
-    level: (result.metadata?.level as string) || "BEGINNER",
-    duration: (result.metadata?.duration as string) || "10h",
-    skills: (result.metadata?.skills as string[]) || [],
-    careerPaths: (result.metadata?.careerPaths as string[]) || [],
+    level: (result.metadata?.level as string),
+    duration: (result.metadata?.duration as string),
+    skills: (result.metadata?.skills as string[]),
+    careerPaths: (result.metadata?.careerPaths as string[]),
   }));
 }
 

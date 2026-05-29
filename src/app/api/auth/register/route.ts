@@ -5,8 +5,10 @@ import { hashPassword } from "@/lib/auth";
 import { createVerificationToken, sendVerificationEmail } from "@/lib/email";
 
 const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
+  name: z.string()
+    .min(2, "Name must be at least 2 characters")
+    .regex(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces"),
+  email: z.email("Invalid email address"),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -19,8 +21,6 @@ const registerSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-
-    console.log(JSON.stringify(body));
 
     // Validate input
     const validationResult = registerSchema.safeParse(body);
