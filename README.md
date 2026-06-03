@@ -8,7 +8,7 @@ An AI-powered career guidance platform designed to help Sierra Leonean youth dis
 - **Personalized Recommendations**: Career paths and courses tailored to individual profiles and job market demands
 - **Adaptive Learning**: Course content adapted to your learning style (visual, auditory, reading/writing, kinesthetic)
 - **Certified Credentials**: Blockchain-verified certificates recognized by government bodies
-- **Job Placement**: Direct job applications with partner companies
+- **Job Placement**: Direct job applications with partner companies ( soon )
 
 ## 🛠 Tech Stack
 
@@ -93,20 +93,35 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ```
 lana/
 ├── src/
-│   ├── app/                    # Next.js App Router pages
+│   ├── app/
+        ├──(admin)/             # Admin routes                  # Next.js App Router pages
 │   │   ├── (auth)/             # Auth routes (login, register, verify)
 │   │   ├── (dashboard)/        # Protected dashboard routes
+        ├── api/
+        ├── onboarding/
+        ├── privacy ( privacy policy )
+        ├── terms ( terms and conditions )
+        ├── verify/             # verify certificate routes
 │   │   └── api/                # API routes
 │   ├── components/
-│   │   ├── ui/                 # Reusable UI components
+        ├── admin
+        ├── courses
 │   │   ├── dashboard/          # Dashboard-specific components
-│   │   └── forms/              # Form components
+│   │   └── ui/                 # Reusable UI Components
 │   ├── lib/
+        ├── auth.ts.            # NextAuth configuration
+        ├── career-recommendation-engine.ts
+        ├── careers.ts
 │   │   ├── db.ts               # Prisma client
+        ├── email.ts.           # Email utilities
+        ├── ensure-user.ts
+        ├── openrouter.ts.      # open router client
 │   │   ├── pinecone.ts         # Pinecone client
-│   │   ├── auth.ts             # NextAuth configuration
-│   │   ├── email.ts            # Email utilities
-│   │   └── utils.ts            # Utility functions
+        ├── quiz-generator.ts.  # quiz generation helpers
+        ├── recommendations.ts. # recommendation logic
+        ├── utils.ts.           # utility functions
+        ├── video-transcript.ts # video transcription helpers
+│   │   └── youtube.ts          # youtube client  
 │   └── types/                  # TypeScript types
 ├── prisma/
 │   └── schema.prisma           # Database schema
