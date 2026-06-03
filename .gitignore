@@ -52,3 +52,9 @@ next-env.d.ts
 # husky
 .husky/_/*
 !.husky/_/husky.sh
+
+# Sentry Config File
+.env.sentry-build-plugin
+
+/src/app/sentry-example-page
+/src/app/api/sentry-example-api
