@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { hashPassword, verifyPassword } from "@/lib/auth";
 import { z } from "zod";
+import sentry from "@/lib/sentry";
 
 const updatePasswordSchema = z.object({
   currentPassword: z.string().min(1, "Current password is required"),
@@ -88,6 +89,13 @@ export async function POST(request: NextRequest) {
       if (isDevelopment) {
         console.error("Password verification error:", verifyError);
       }
+      else{
+        sentry.logger.error("Password verification error", {
+          error: verifyError instanceof Error ? verifyError.message : String(verifyError),
+          userId: session.user.id,
+          userEmail: session.user.email
+        })
+      }
       return NextResponse.json(
         { success: false, error: "An error occurred while verifying your password" },
         { status: 500 }
@@ -109,6 +117,11 @@ export async function POST(request: NextRequest) {
     const isDevelopment = process.env.NODE_ENV === "development";
     if (isDevelopment) {
       console.error("Update password error:", error);
+    }
+    else{
+      sentry.logger.error("Failed to update password",{
+        error: error instanceof Error ? error.message : String(error),
+      })
     }
     return NextResponse.json(
       { success: false, error: "Failed to update password" },

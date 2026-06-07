@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
 import { createVerificationToken, sendVerificationEmail } from "@/lib/email";
+import sentry from "@/lib/sentry";
 
 const registerSchema = z.object({
   name: z.string()
@@ -86,10 +87,12 @@ export async function POST(request: NextRequest) {
       } else {
         const errorObj = emailError instanceof Error ? emailError : new Error(String(emailError));
         const errorWithCode = emailError as { code?: string };
-        console.error("Failed to send verification email:", {
-          code: errorWithCode?.code,
-          message: errorObj.message,
+
+        sentry.logger.error("Failed to send verification email:",{
+          error: errorObj.message,
+          statusCode: errorWithCode?.code,
         });
+
       }
       return NextResponse.json(
         {
@@ -119,10 +122,11 @@ export async function POST(request: NextRequest) {
       console.error("Registration error:", error);
     } else {
       const errorObj = error instanceof Error ? error : new Error(String(error));
-      console.error("Registration error:", {
-        message: errorObj.message,
-        name: errorObj.name,
+
+      sentry.logger.error("Registration error:",{
+        error: errorObj.message,
       });
+      
     }
     return NextResponse.json(
       {

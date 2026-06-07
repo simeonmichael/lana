@@ -103,7 +103,7 @@ export default function OnboardingPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             answers,
-            userType: "Employed", // Default to Employed (job seeker) for students
+            userType: "Employed",
           }),
         });
 
