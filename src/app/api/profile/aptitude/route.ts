@@ -9,6 +9,7 @@ import {
   type UserAptitudeProfile,
   type RecommendedCareer,
 } from "@/lib/career-recommendation-engine";
+import Sentry from "@/lib/sentry";
 
 const aptitudeSchema = z.object({
   answers: z.record(z.string(), z.union([z.string(), z.array(z.string())])),
@@ -85,17 +86,15 @@ export async function POST(request: NextRequest) {
       education,
     };
 
-    console.log("Starting RAG recommendation for user:", session.user.id);
-
     // Get career recommendations using RAG (Pinecone + OpenRouter)
     // Note: Courses are generated later when user selects a career
     let careerRecommendations: RecommendedCareer[] = [];
     try {
       careerRecommendations = await getCareerRecommendationsRAG(userProfile);
-      console.log(`Got ${careerRecommendations.length} career recommendations`);
     } catch (ragError) {
-      console.error("RAG recommendation failed, using fallback:", ragError);
-      // Continue with empty recommendations - user can still see fallback on the page
+      Sentry.logger.error("RAG recommendation failed, using fallback", {
+        error: ragError instanceof Error ? ragError.message : String(ragError),
+      });
     }
 
     // Update student profile with aptitude results and recommendations
@@ -109,7 +108,6 @@ export async function POST(request: NextRequest) {
         aptitudeCompleted: true,
         completedAt: new Date(),
         recommendedCareers: JSON.parse(JSON.stringify(careerRecommendations)),
-        // Don't set recommendedCourses here - they're created when user selects a career
       },
       create: {
         userId: session.user.id,
